@@ -139,14 +139,14 @@ class FeatureExtractor(object):
         for word_id in stack + buffer:
             if word_id == -1:
                 word = '<NULL>'
-                pos = None
+                _pos = None
             elif word_id == 0:
                 word = '<ROOT>'
-                pos = None
+                _pos = None
             else:
                 word = words[word_id]
-                pos = pos[word_id]
-            word_encodings.append(self._resolve_word_encoding(word, pos))
+                _pos = pos[word_id]
+            word_encodings.append(self._resolve_word_encoding(word, _pos))
             
         return np.array(word_encodings)
     
