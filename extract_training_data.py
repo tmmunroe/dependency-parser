@@ -1,8 +1,10 @@
 from conll_reader import DependencyStructure, conll_reader
 from collections import defaultdict
+from typing import Any, List
 import copy
 import sys
 import keras
+import keras.utils
 import numpy as np
 
 class State(object):
@@ -114,13 +116,44 @@ class FeatureExtractor(object):
             vocab[word] = index
         return vocab     
 
-    def get_input_representation(self, words, pos, state):
-        # TODO: Write this method for Part 2
-        return np.zeros(6)
+    def _pad_list(self, x: List, pad_value: Any, output_length: int) -> List:
+        while len(x) < output_length:
+            x.append(pad_value)
+        return x
+
+    def _resolve_word_encoding(self, word:str, pos:str) -> int:
+        if pos == '<CD>':
+            word = '<CD>'
+        elif pos == '<NNP>':
+            word = '<NNP>'
+        elif word not in self.word_vocab:
+            word = '<UNK>'
+
+        return self.word_vocab[word]
+        
+    def get_input_representation(self, words: List[str], pos: List[str], state: State):
+        stack = self._pad_list(state.stack[-1:-4:-1], -1, 3)
+        buffer = self._pad_list(state.buffer[-1:-4:-1], -1, 3)
+
+        word_encodings = []
+        for word_id in stack + buffer:
+            if word_id == -1:
+                word = '<NULL>'
+                pos = None
+            elif word_id == 0:
+                word = '<ROOT>'
+                pos = None
+            else:
+                word = words[word_id]
+                pos = pos[word_id]
+            word_encodings.append(self._resolve_word_encoding(word, pos))
+            
+        return np.array(word_encodings)
+    
 
     def get_output_representation(self, output_pair):  
         # TODO: Write this method for Part 2
-        return np.zeros(91)
+        return keras.utils.to_categorical(self.output_labels[output_pair], num_classes=91)
 
      
     
