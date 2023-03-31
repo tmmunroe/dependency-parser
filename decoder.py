@@ -2,28 +2,70 @@ from conll_reader import DependencyStructure, DependencyEdge, conll_reader
 from collections import defaultdict
 import copy
 import sys
+from typing import List, Tuple
 
 import numpy as np
 import keras
+import tensorflow as tf
 
 from extract_training_data import FeatureExtractor, State
 
 class Parser(object): 
 
-    def __init__(self, extractor, modelfile):
+    def __init__(self, extractor: FeatureExtractor, modelfile:str):
         self.model = keras.models.load_model(modelfile)
         self.extractor = extractor
         
         # The following dictionary from indices to output actions will be useful
         self.output_labels = dict([(index, action) for (action, index) in extractor.output_labels.items()])
 
+    def _apply_transition(self, state: State, action: str, deprel: str) -> None:
+        if action[0] == 's':
+            state.shift()
+        elif action[0] == 'r':
+            state.right_arc(deprel)
+        elif action[0] == 'l':
+            state.left_arc(deprel)
+        return None
+
+    def _is_valid_action(self, state: State, action: str) -> bool:
+        # precondition: buffer has elements in it
+        if not state.stack: # stack is empty, we can only shift
+            return action[0] == 's'
+        elif state.stack[-1] == 0: # root is top of stack, can only shift or right arc
+            return action[0] == 's' or action[0] == 'r'
+        
+        # otherwise, shift, right arc, and left arc are all valid
+        return True
+
     def parse_sentence(self, words, pos):
         state = State(range(1,len(words)))
         state.stack.append(0)    
 
-        while state.buffer: 
-            pass
-            # TODO: Write the body of this loop for part 4 
+        while state.buffer:
+            # get features for neural network
+            encoded_state = self.extractor.get_input_representation(words, pos, state)
+
+            # get neural network prediction
+            transition_probabilities = self.model(encoded_state.reshape(-1, 6))
+            transition_probabilities = tf.reshape(transition_probabilities, -1)
+
+            # sort indexes (actions) by probability, note that this will put lowest probability first
+            transition_indexes_sorted = np.argsort(transition_probabilities)
+            
+            # iterate through indexes (actions) until a valid action is found
+            action, deprel = None, None
+            for transition_id in reversed(transition_indexes_sorted.ravel()):
+                action, deprel = self.output_labels[transition_id]
+                if self._is_valid_action(state, action):
+                    break
+            else:
+                # sanity check
+                raise ValueError('Expected at least one valid transition, but found none!')
+
+            # apply transition to state
+            self._apply_transition(state, action, deprel)
+            
 
         result = DependencyStructure()
         for p,c,r in state.deps: 
