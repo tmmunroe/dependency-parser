@@ -37,6 +37,12 @@ if __name__ == "__main__":
 
     las_list = []
     uas_list = []    
+
+    with open(sys.argv[2],'r') as in_file: 
+        tree_count = 0
+        for dtree in conll_reader(in_file):
+            tree_count += 1
+        print('Tree count: ', tree_count)
    
     count = 0 
     with open(sys.argv[2],'r') as in_file: 
@@ -46,6 +52,13 @@ if __name__ == "__main__":
             pos = dtree.pos()
             predict = parser.parse_sentence(words, pos)
             labeled_correct, unlabeled_correct, num_words = compare_parser(dtree, predict)
+            if num_words == 0:
+                print('num_words=0...')
+                print('words: ', words)
+                print('pos: ', pos)
+                print('predict: ', predict)
+                print('dtree: ', dtree)
+
             las_s = labeled_correct / float(num_words)
             uas_s = unlabeled_correct / float(num_words)
             las_list.append(las_s)
