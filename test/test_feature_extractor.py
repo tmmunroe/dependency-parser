@@ -63,12 +63,12 @@ def test_get_input_representation():
             loc_extractor = FeatureExtractor(word_vocab, pos_vocab)
 
 
-    words = [None] + "He used about 56 words defending the witnesses ' constitutional rights .".split()
-    pos = [None] + "PRP VBD RB CD NNS VBG DT NNS POS JJ NNS .".split()
+    words = [None] + "Cooperman used about 56 words defending the witnesses ' constitutional rights .".split()
+    pos = [None] + "NNP VBD RB CD NNS VBG DT NNS POS JJ NNS .".split()
 
     """
     (0, (None, None))
-    (1, ('He', 'PRP'))
+    (1, ('Cooperman', 'NNP'))
     (2, ('used', 'VBD'))
     (3, ('about', 'RB'))
     (4, ('56', 'CD'))
@@ -106,7 +106,7 @@ def test_get_input_representation():
     state.buffer = [0, 1, 2]
 
     input_representation = loc_extractor.get_input_representation(words, pos, state)
-    expected_output = np.array([ 6, 11, 22, 5, 12, 3])
+    expected_output = np.array([ 6, 11, 22, 5, 1, 3])
     assert (input_representation == expected_output).all()
 
     # case 3: both have >3
