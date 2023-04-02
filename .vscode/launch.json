@@ -5,11 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Evaluate Test Data",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluate.py",
+            "args": [
+                "data/model.h5", 
+                "data/test.conll"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Decoder",
             "type": "python",
             "request": "launch",
             "program": "decoder.py",
-            "args": ["data/model.h5", "data/dev.conll"],
+            "args": [
+                "data/model.h5",
+                "data/dev.conll"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         },

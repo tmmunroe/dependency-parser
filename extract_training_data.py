@@ -1,6 +1,6 @@
 from conll_reader import DependencyStructure, conll_reader
 from collections import defaultdict
-from typing import Any, List
+from typing import Any, List, Tuple
 import copy
 import sys
 import keras
@@ -93,7 +93,7 @@ dep_relations = ['tmod', 'vmod', 'csubjpass', 'rcmod', 'ccomp', 'poss', 'paratax
 
 
 class FeatureExtractor(object):
-       
+
     def __init__(self, word_vocab_file, pos_vocab_file):
         self.word_vocab = self.read_vocab(word_vocab_file)        
         self.pos_vocab = self.read_vocab(pos_vocab_file)        
@@ -121,48 +121,46 @@ class FeatureExtractor(object):
             x.append(pad_value)
         return x
 
-    def _resolve_pos_encoding(self, word:str, pos:str) -> int:
-        if pos == '<CD>':
+    def _extract_word_and_pos(self, word_id: int, words: List[str], pos: List[str]) -> Tuple[str, str]:
+        # get word and pos from inputs, handle Root and Null inputs
+        if word_id == -1:
+            word = '<NULL>'
+            _pos = '<NULL>'
+        elif word_id == 0:
+            word = '<ROOT>'
+            _pos = '<ROOT>'
+        else:
+            word = words[word_id].lower()
+            _pos = pos[word_id]
+
+        # handle special cases and label unknown words
+        if _pos == 'CD':
             word = '<CD>'
-        elif pos == '<NNP>':
+        elif _pos == 'NNP': # TODO: test if it performs better with NNPS here as well
             word = '<NNP>'
         elif word not in self.word_vocab:
             word = '<UNK>'
-
-        return self.word_vocab[word]
-
-    def _resolve_word_encoding(self, word:str, pos:str) -> int:
-        if pos == 'CD':
-            word = '<CD>'
-        elif pos == 'NNP':
-            word = '<NNP>'
-        elif word not in self.word_vocab:
-            word = '<UNK>'
-
-        return self.word_vocab[word]
         
+        # label unknown POS
+        if _pos not in self.pos_vocab:
+            _pos = '<UNK>'
+
+        return word, _pos
+
+
     def get_input_representation(self, words: List[str], pos: List[str], state: State):
         stack = self._pad_list(state.stack[-1:-4:-1], -1, 3)
         buffer = self._pad_list(state.buffer[-1:-4:-1], -1, 3)
 
         word_encodings = []
         for word_id in stack + buffer:
-            if word_id == -1:
-                word = '<NULL>'
-                _pos = None
-            elif word_id == 0:
-                word = '<ROOT>'
-                _pos = None
-            else:
-                word = words[word_id]
-                _pos = pos[word_id]
-            word_encodings.append(self._resolve_word_encoding(word, _pos))
+            word, _pos = self._extract_word_and_pos(word_id, words, pos)
+            word_encodings.append(self.word_vocab[word])
             
         return np.array(word_encodings)
     
 
-    def get_output_representation(self, output_pair):  
-        # TODO: Write this method for Part 2
+    def get_output_representation(self, output_pair):
         return keras.utils.to_categorical(self.output_labels[output_pair], num_classes=91)
 
      
