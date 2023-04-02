@@ -5,12 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Parse one",
+            "type": "python",
+            "request": "launch",
+            "program": "parse_one.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Evaluate Test Data",
             "type": "python",
             "request": "launch",
             "program": "evaluate.py",
             "args": [
-                "data/model.h5", 
+                "data/model.h5",
                 "data/test.conll"
             ],
             "console": "integratedTerminal",

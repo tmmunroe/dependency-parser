@@ -53,7 +53,6 @@ def test_extract_word_and_pos():
     assert (w, p) == ("<UNK>", "<UNK>")
 
 
-
 def test_get_input_representation():
     word_vocab_file = 'test/data/words.vocab'
     pos_vocab_file = 'test/data/pos.vocab'
@@ -117,6 +116,7 @@ def test_get_input_representation():
     input_representation = loc_extractor.get_input_representation(words, pos, state)
     expected_output = np.array([9, 6, 11, 0, 16, 5])
     assert (input_representation == expected_output).all()
+
 
 def test_get_output_representation():
     output_rep_r = extractor.get_output_representation(("right_arc", "tmod"))
