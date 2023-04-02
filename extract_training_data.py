@@ -121,10 +121,20 @@ class FeatureExtractor(object):
             x.append(pad_value)
         return x
 
-    def _resolve_word_encoding(self, word:str, pos:str) -> int:
+    def _resolve_pos_encoding(self, word:str, pos:str) -> int:
         if pos == '<CD>':
             word = '<CD>'
         elif pos == '<NNP>':
+            word = '<NNP>'
+        elif word not in self.word_vocab:
+            word = '<UNK>'
+
+        return self.word_vocab[word]
+
+    def _resolve_word_encoding(self, word:str, pos:str) -> int:
+        if pos == 'CD':
+            word = '<CD>'
+        elif pos == 'NNP':
             word = '<NNP>'
         elif word not in self.word_vocab:
             word = '<UNK>'
