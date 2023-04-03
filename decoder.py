@@ -44,8 +44,8 @@ class Parser(object):
             )
         elif action[0] == 'r':
             # right arc is always possible if there are elements in both stack and buffer..
-            #  we know that the root should not be the target of an arc, and we know that it can
-            #  never be the target of a right arc because it will always be the leftmost element
+            #  keep in mind, since the root is the leftmost element, there is no risk of it
+            #  being the child in a right arc
             return len(state.stack) > 0
         else: # left arc
             # left arc is possible if there are elements in both stack and buffer
