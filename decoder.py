@@ -30,7 +30,18 @@ class Parser(object):
 
     def _is_valid_action(self, state: State, action: str) -> bool:
         # precondition: buffer has elements in it
-        if action[0] == 's':
+        if action[0] == 'r':
+            # right arc is always possible if there are elements in both stack and buffer..
+            #  keep in mind, since the root is the leftmost element, there is no risk of it
+            #  being the child in a right arc
+            return len(state.stack) > 0
+        elif action[0] == 'l':
+            # left arc is possible if there are elements in both stack and buffer
+            # AND, the root will not be the child of the arc (i.e. root is not at top of the stack)
+            # this can be reduced to checking that the length of the stack is > 1.. 
+            # i.e., root + at least one other element
+            return len(state.stack) > 1
+        else: # shift
             # stack is empty (can always shift if stack is empty)
             # OR, if stack is not empty, we can do this if the
             #   buffer won't be emptied by this shift..
@@ -42,17 +53,6 @@ class Parser(object):
                 len(state.stack) == 0
                 or len(state.buffer) > 1       
             )
-        elif action[0] == 'r':
-            # right arc is always possible if there are elements in both stack and buffer..
-            #  keep in mind, since the root is the leftmost element, there is no risk of it
-            #  being the child in a right arc
-            return len(state.stack) > 0
-        else: # left arc
-            # left arc is possible if there are elements in both stack and buffer
-            # AND, the root will not be the child of the arc (i.e. root is not at top of the stack)
-            # this can be reduced to checking that the length of the stack is > 1.. 
-            # i.e., root + at least one other element
-            return len(state.stack) > 1
 
     def parse_sentence(self, words, pos):
         state = State(range(1,len(words)))
